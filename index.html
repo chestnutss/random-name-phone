@@ -5,21 +5,31 @@
   <title>LIFF 測試頁</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
-<body style="text-align:center; font-family:sans-serif; margin-top:50px;">
+<body style="text-align:center; font-family:sans-serif; margin:40px;">
   <h2>LIFF 測試</h2>
-  <p id="status">正在初始化...</p>
+  <p id="status">初始化中...</p>
+
   <button id="shareBtn" style="padding:15px 30px; font-size:16px; display:none;">
-    重新分享我的頻道
+    分享我的頻道
   </button>
 
+  <pre id="debug" style="text-align:left; white-space:pre-wrap; word-break:break-word; background:#f5f5f5; padding:12px; border-radius:8px; margin-top:20px;"></pre>
+
   <script>
-    const liffId = "2009755782-H9fxrFgo";
-    const shareBtn = document.getElementById("shareBtn");
+    const LIFF_ID = "2009755782-H9fxrFgo";
     const statusEl = document.getElementById("status");
+    const debugEl = document.getElementById("debug");
+    const shareBtn = document.getElementById("shareBtn");
+
+    function log(msg) {
+      console.log(msg);
+      debugEl.textContent += msg + "\n";
+    }
 
     async function doShare() {
       try {
         statusEl.textContent = "正在開啟分享視窗...";
+        log("呼叫 shareTargetPicker()");
         const result = await liff.shareTargetPicker([
           {
             type: "flex",
@@ -60,36 +70,50 @@
           }
         ]);
 
-        if (result) {
-          statusEl.textContent = "已開啟分享流程。";
-        } else {
-          statusEl.textContent = "你取消了分享。";
-        }
+        log("shareTargetPicker result: " + JSON.stringify(result));
+        statusEl.textContent = result ? "分享成功或已送出分享流程" : "你取消了分享";
       } catch (err) {
         console.error(err);
-        statusEl.textContent = "分享失敗，請按下方按鈕重試。";
-        shareBtn.style.display = "inline-block";
+        log("share error:");
+        log("message: " + (err.message || "(no message)"));
+        log("name: " + (err.name || "(no name)"));
+        log("code: " + (err.code || "(no code)"));
+        log("full: " + JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        statusEl.textContent = "分享失敗";
       }
     }
 
     async function main() {
       try {
-        await liff.init({ liffId });
+        log("目前網址: " + location.href);
+        log("LIFF ID: " + LIFF_ID);
+        log("liff.isInClient() before init: " + liff.isInClient());
+        log("LINE version before init: " + liff.getLineVersion());
+
+        await liff.init({ liffId: LIFF_ID });
+        log("liff.init() 成功");
+
+        log("liff.isInClient() after init: " + liff.isInClient());
+        log("LINE version after init: " + liff.getLineVersion());
+        log("context: " + JSON.stringify(liff.getContext()));
 
         if (!liff.isLoggedIn()) {
+          log("尚未登入，呼叫 liff.login()");
           liff.login();
           return;
         }
 
         shareBtn.style.display = "inline-block";
         shareBtn.onclick = doShare;
-
-        await doShare();
+        statusEl.textContent = "初始化完成，請按分享按鈕";
       } catch (err) {
         console.error(err);
-        statusEl.textContent = "LIFF 初始化失敗，請按重新整理再試一次。";
-        shareBtn.style.display = "inline-block";
-        shareBtn.onclick = doShare;
+        log("init error:");
+        log("message: " + (err.message || "(no message)"));
+        log("name: " + (err.name || "(no name)"));
+        log("code: " + (err.code || "(no code)"));
+        log("full: " + JSON.stringify(err, Object.getOwnPropertyNames(err)));
+        statusEl.textContent = "LIFF 初始化失敗";
       }
     }
 
