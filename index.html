@@ -6,64 +6,94 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body style="text-align:center; font-family:sans-serif; margin-top:50px;">
+  <h2>LIFF 測試</h2>
+  <p id="status">正在初始化...</p>
+  <button id="shareBtn" style="padding:15px 30px; font-size:16px; display:none;">
+    重新分享我的頻道
+  </button>
 
-<h2>LIFF 測試</h2>
-<button onclick="share()" style="padding:15px 30px; font-size:16px;">
-  分享我的頻道
-</button>
+  <script>
+    const liffId = "2009755782-H9fxrFgo";
+    const shareBtn = document.getElementById("shareBtn");
+    const statusEl = document.getElementById("status");
 
-<script>
-async function share() {
-  // 初始化 LIFF
-  await liff.init({ liffId: "2009755782-H9fxrFgo" });
-
-  if (!liff.isLoggedIn()) {
-    liff.login();
-    return;
-  }
-
-  // 分享 Flex Message
-  await liff.shareTargetPicker([
-    {
-      type: "flex",
-      altText: "來看我的YT頻道",
-      contents: {
-        type: "bubble",
-        hero: {
-          type: "image",
-          url: "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg",
-          size: "full",
-          aspectRatio: "20:13",
-          aspectMode: "cover"
-        },
-        body: {
-          type: "box",
-          layout: "vertical",
-          spacing: "md",
-          contents: [
-            {
-              type: "text",
-              text: "來看我的 YouTube 頻道！",
-              weight: "bold",
-              size: "lg"
-            },
-            {
-              type: "button",
-              style: "primary",
-              color: "#FF0000",
-              action: {
-                type: "uri",
-                label: "前往頻道",
-                uri: "https://www.youtube.com/@tsukitsuki1226"
+    async function doShare() {
+      try {
+        statusEl.textContent = "正在開啟分享視窗...";
+        const result = await liff.shareTargetPicker([
+          {
+            type: "flex",
+            altText: "來看我的YT頻道",
+            contents: {
+              type: "bubble",
+              hero: {
+                type: "image",
+                url: "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg",
+                size: "full",
+                aspectRatio: "20:13",
+                aspectMode: "cover"
+              },
+              body: {
+                type: "box",
+                layout: "vertical",
+                spacing: "md",
+                contents: [
+                  {
+                    type: "text",
+                    text: "來看我的 YouTube 頻道！",
+                    weight: "bold",
+                    size: "lg"
+                  },
+                  {
+                    type: "button",
+                    style: "primary",
+                    color: "#FF0000",
+                    action: {
+                      type: "uri",
+                      label: "前往頻道",
+                      uri: "https://www.youtube.com/@tsukitsuki1226"
+                    }
+                  }
+                ]
               }
             }
-          ]
+          }
+        ]);
+
+        if (result) {
+          statusEl.textContent = "已開啟分享流程。";
+        } else {
+          statusEl.textContent = "你取消了分享。";
         }
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "分享失敗，請按下方按鈕重試。";
+        shareBtn.style.display = "inline-block";
       }
     }
-  ]);
-}
-</script>
 
+    async function main() {
+      try {
+        await liff.init({ liffId });
+
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        shareBtn.style.display = "inline-block";
+        shareBtn.onclick = doShare;
+
+        await doShare();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "LIFF 初始化失敗，請按重新整理再試一次。";
+        shareBtn.style.display = "inline-block";
+        shareBtn.onclick = doShare;
+      }
+    }
+
+    main();
+  </script>
 </body>
 </html>
