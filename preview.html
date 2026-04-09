@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LIFF 測試頁</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body style="text-align:center; font-family:sans-serif; margin-top:50px;">
+
+<h2>LIFF 測試</h2>
+<button onclick="share()" style="padding:15px 30px; font-size:16px;">
+  分享我的頻道
+</button>
+
+<script>
+async function share() {
+  // 初始化 LIFF
+  await liff.init({ liffId: "2009755782-H9fxrFgo" });
+
+  if (!liff.isLoggedIn()) {
+    liff.login();
+    return;
+  }
+
+  // 分享 Flex Message
+  await liff.shareTargetPicker([
+    {
+      type: "flex",
+      altText: "來看我的YT頻道",
+      contents: {
+        type: "bubble",
+        hero: {
+          type: "image",
+          url: "https://i.ytimg.com/vi/aqz-KE-bpKQ/maxresdefault.jpg",
+          size: "full",
+          aspectRatio: "20:13",
+          aspectMode: "cover"
+        },
+        body: {
+          type: "box",
+          layout: "vertical",
+          spacing: "md",
+          contents: [
+            {
+              type: "text",
+              text: "來看我的 YouTube 頻道！",
+              weight: "bold",
+              size: "lg"
+            },
+            {
+              type: "button",
+              style: "primary",
+              color: "#FF0000",
+              action: {
+                type: "uri",
+                label: "前往頻道",
+                uri: "https://www.youtube.com/@tsukitsuki1226"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]);
+}
+</script>
+
+</body>
+</html>
